@@ -178,11 +178,19 @@ contract IndexPoolRecovery {
     );
   }
 
+
+  /**
+   * @dev Transfer the full balance held by this contract of a token to the treasury.
+   */
   function claimToken(IERC20 token) internal {
     uint256 bal = token.balanceOf(address(this));
     if (bal > 0) TransferHelper.safeTransfer(address(token), treasury, bal);
   }
 
+  /**
+   * @dev Transfer all but 1 wei of the paired token from a Uniswap pair
+   * to the treasury.
+   */
   function claimLiquidity(address pairedToken) internal {
     (address token0, address token1) =
       address(this) < pairedToken ? (address(this), pairedToken) : (pairedToken, address(this));
@@ -205,6 +213,9 @@ contract IndexPoolRecovery {
     _;
   }
 
+  /**
+   * @dev Transfer the assets in DEFI5 and its Uniswap pair's WETH to the treasury.
+   */
   function defi5() external onlyFromTo(recoveryContract, DEFI5) {
     claimToken(IERC20(0x6B3595068778DD592e39A122f4f5a5cF09C90fE2)); // sushi
     claimToken(IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984)); // uni
@@ -220,6 +231,9 @@ contract IndexPoolRecovery {
     }
   }
 
+  /**
+   * @dev Transfer the assets in CC10 and its Uniswap pair's WETH to the treasury.
+   */
   function cc10() external onlyFromTo(recoveryContract, CC10) {
     claimToken(IERC20(0xd26114cd6EE289AccF82350c8d8487fedB8A0C07)); // omg
     claimToken(IERC20(0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828)); // uma
@@ -238,6 +252,9 @@ contract IndexPoolRecovery {
     }
   }
 
+  /**
+   * @dev Transfer the assets in FFF and its Uniswap pair's WETH to the treasury.
+   */
   function fff() external onlyFromTo(recoveryContract, FFF) {
     claimToken(IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)); // weth
     claimToken(IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599)); // wbtc
@@ -249,6 +266,9 @@ contract IndexPoolRecovery {
     }
   }
 
+  /**
+   * @dev Transfer the assets in the CC10 token seller to the treasury.
+   */
   function cc10Seller() external onlyFromTo(recoveryContract, CC10_SELLER) {
     claimToken(IERC20(0xd26114cd6EE289AccF82350c8d8487fedB8A0C07));
     claimToken(IERC20(0xE41d2489571d322189246DaFA5ebDe1F4699F498));
@@ -258,6 +278,9 @@ contract IndexPoolRecovery {
     }
   }
 
+  /**
+   * @dev Execute a deposit to Polygon.
+   */
   function sendToPolygon() internal {
     bytes memory encodedAmount = abi.encode(sideChainDepositAmount);
 
