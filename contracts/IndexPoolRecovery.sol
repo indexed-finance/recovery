@@ -90,6 +90,30 @@ contract IndexPoolRecovery {
   }
 
   /**
+   * @dev Enable transfers when the sender is FFF and the receiver is DEGEN.
+   * This allows DEGEN to be removed from FFF even while the implementation contract
+   * for Sigma pools is set to the recovery contract.
+   */
+  function transfer(address to, uint256 amount) external onlyFromTo(FFF, DEGEN) returns (bool) {
+    _delegate(sigmaPoolImplementation);
+  }
+
+  /**
+   * @dev If the sender is FFF and the receiver is DEGEN, delegate
+   * to the real sigma pool implementation to read the balance;
+   * otherwise, return the value stored at the balance slot for `account`.
+   */
+  function balanceOf(address account) external returns (uint256 bal) {
+    if (msg.sender == FFF && address(this) == DEGEN) {
+      _delegate(sigmaPoolImplementation);
+    }
+    uint256 balslot = balanceSlot(account);
+    assembly {
+      bal := sload(balslot)
+    }
+  }
+
+  /**
    * @dev Delegate to an implementation contract.
    */
   function _delegate(address implementation) internal virtual {
@@ -119,15 +143,6 @@ contract IndexPoolRecovery {
   }
 
   /**
-   * @dev Enable transfers when the sender is FFF and the receiver is DEGEN.
-   * This allows DEGEN to be removed from FFF even while the implementation contract
-   * for Sigma pools is set to the recovery contract.
-   */
-  function transfer(address to, uint256 amount) external onlyFromTo(FFF, DEGEN) returns (bool) {
-    _delegate(sigmaPoolImplementation);
-  }
-
-  /**
    * @dev Calculates the slot for temporary balance storage.
    */
   function balanceSlot(address account) internal pure returns (uint256 _slot) {
@@ -142,21 +157,6 @@ contract IndexPoolRecovery {
     uint256 balslot = balanceSlot(account);
     assembly {
       sstore(balslot, bal)
-    }
-  }
-
-  /**
-   * @dev If the sender is FFF and the receiver is DEGEN, delegate
-   * to the real sigma pool implementation to read the balance;
-   * otherwise, return the value stored at the balance slot for `account`.
-   */
-  function balanceOf(address account) external returns (uint256 bal) {
-    if (msg.sender == FFF && address(this) == DEGEN) {
-      _delegate(sigmaPoolImplementation);
-    }
-    uint256 balslot = balanceSlot(account);
-    assembly {
-      bal := sload(balslot)
     }
   }
 
@@ -284,9 +284,9 @@ contract IndexPoolRecovery {
   function sendToPolygon() internal {
     bytes memory encodedAmount = abi.encode(sideChainDepositAmount);
 
-    polygonRootChainManager.depositFor(polygonRecipient, 0xfa6de2697D59E88Ed7Fc4dFE5A33daC43565ea41, encodedAmount);
-    polygonRootChainManager.depositFor(polygonRecipient, 0x17aC188e09A7890a1844E5E65471fE8b0CcFadF3, encodedAmount);
-    polygonRootChainManager.depositFor(polygonRecipient, 0xaBAfA52D3d5A2c18A4C1Ae24480D22B831fC0413, encodedAmount);
+    polygonRootChainManager.depositFor(polygonRecipient, DEFI5, encodedAmount);
+    polygonRootChainManager.depositFor(polygonRecipient, CC10, encodedAmount);
+    polygonRootChainManager.depositFor(polygonRecipient, FFF, encodedAmount);
   }
 
   function drainAndRepair() external onlyFromTo(treasury, recoveryContract) {
@@ -294,10 +294,10 @@ contract IndexPoolRecovery {
     proxyManagerController.setImplementationAddressManyToOne(coreSellerImplementationID, address(this));
     proxyManagerController.setImplementationAddressManyToOne(sigmaPoolImplementationID, address(this));
     sendToPolygon();
-    IndexPoolRecovery(0xaBAfA52D3d5A2c18A4C1Ae24480D22B831fC0413).fff();
-    IndexPoolRecovery(0xfa6de2697D59E88Ed7Fc4dFE5A33daC43565ea41).defi5();
-    IndexPoolRecovery(0x17aC188e09A7890a1844E5E65471fE8b0CcFadF3).cc10();
-    IndexPoolRecovery(0xE487F6E45D292BF8D9B883d007d93714f4bFE148).cc10Seller();
+    IndexPoolRecovery(FFF).fff();
+    IndexPoolRecovery(DEFI5).defi5();
+    IndexPoolRecovery(CC10).cc10();
+    IndexPoolRecovery(CC10_SELLER).cc10Seller();
 
     proxyManagerController.setImplementationAddressManyToOne(corePoolImplementationID, corePoolImplementation);
     proxyManagerController.setImplementationAddressManyToOne(coreSellerImplementationID, coreSellerImplementation);
