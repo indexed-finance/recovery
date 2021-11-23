@@ -226,9 +226,6 @@ contract IndexPoolRecovery {
     claimToken(IERC20(0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F)); // snx
     claimLiquidity(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address _treasury = treasury;
-    assembly {
-      selfdestruct(_treasury)
-    }
   }
 
   /**
@@ -247,9 +244,6 @@ contract IndexPoolRecovery {
     claimToken(IERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984)); // uni
     claimLiquidity(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address _treasury = treasury;
-    assembly {
-      selfdestruct(_treasury)
-    }
   }
 
   /**
@@ -261,9 +255,6 @@ contract IndexPoolRecovery {
     claimToken(IERC20(DEGEN)); // degen
     claimLiquidity(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address _treasury = treasury;
-    assembly {
-      selfdestruct(_treasury)
-    }
   }
 
   /**
